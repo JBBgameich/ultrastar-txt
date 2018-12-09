@@ -91,9 +91,10 @@ pub fn parse_txt_song<P: AsRef<Path>>(path: P) -> Result<TXTSong> {
 
     // canonicalize paths
     if let Some(base_path) = path.parent() {
-        // canonicalize audio path
-        txt_song.header.audio_path =
-            canonicalize_path(Some(txt_song.header.audio_path), base_path)?.unwrap();
+        // canonicalize audio path - TODO:assuming it is not needed, since we dont have path
+        // anymore
+        //txt_song.header.audio_path =
+        //    canonicalize_path(Some(txt_song.header.audio_path), base_path)?.unwrap();
 
         // canonicalize other path
         txt_song.header.video_path = canonicalize_path(txt_song.header.video_path, base_path)?;

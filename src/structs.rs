@@ -12,7 +12,7 @@ pub struct Header {
     /// the beats per minute of the song
     pub bpm: f32,
     /// the path to the music file
-    pub audio_path: PathBuf,
+    pub audio_path: std::string::String,
 
     // optional data from headers
     /// the gap between the start of the audio file and the first note in milliseconds

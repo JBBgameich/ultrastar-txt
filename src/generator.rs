@@ -18,10 +18,11 @@ error_chain!{
 ///
 pub fn generate_song_txt(header: &Header, lines: &Vec<Line>) -> Result<String> {
     // generate header
-    let mp3_str = match header.audio_path.to_str() {
+    let mp3_str = header.audio_path.clone();
+    /*let mp3_str = match Some(header.audio_path) {
         Some(x) => x,
         None => bail!(ErrorKind::InvalidPathEncoding("MP3")),
-    };
+    }; */
     let mut song_txt_str = String::from(format!(
         "#TITLE:{}\n#ARTIST:{}\n#MP3:{}\n#BPM:{}\n",
         header.title, header.artist, mp3_str, header.bpm

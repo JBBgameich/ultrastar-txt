@@ -101,7 +101,8 @@ pub fn parse_txt_header_str(txt_str: &str) -> Result<Header> {
             }
             "MP3" => {
                 if opt_audio_path.is_none() {
-                    opt_audio_path = Some(PathBuf::from(value));
+                    opt_audio_path = Some(String::from(value));
+                        //Some(PathBuf::from(value));
                 } else {
                     bail!(ErrorKind::DuplicateHeader(line_count, "MP3"));
                 }
