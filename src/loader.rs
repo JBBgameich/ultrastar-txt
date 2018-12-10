@@ -1,13 +1,13 @@
 extern crate chardet;
 extern crate encoding;
 
-use parser::{parse_txt_header_str, parse_txt_lines_str};
+use crate::parser::{parse_txt_header_str, parse_txt_lines_str};
+use crate::structs::TXTSong;
 use std::fs::File;
 use std::io::Read;
 use std::path::{Path, PathBuf};
-use structs::TXTSong;
 
-error_chain!{
+error_chain! {
     errors {
         #[doc="input output error while handling the file"]
         IOError {
@@ -60,7 +60,7 @@ fn read_file_to_string<P: AsRef<Path>>(p: P) -> Result<String> {
 }
 
 fn canonicalize_path<P: AsRef<Path>, B: AsRef<Path>>(
-    path: Option<P>,
+    path: &Option<P>,
     base_path: B,
 ) -> Result<Option<PathBuf>> {
     Ok(if let Some(ref path) = path {
@@ -97,10 +97,10 @@ pub fn parse_txt_song<P: AsRef<Path>>(path: P) -> Result<TXTSong> {
         //    canonicalize_path(Some(txt_song.header.audio_path), base_path)?.unwrap();
 
         // canonicalize other path
-        txt_song.header.video_path = canonicalize_path(txt_song.header.video_path, base_path)?;
-        txt_song.header.cover_path = canonicalize_path(txt_song.header.cover_path, base_path)?;
+        txt_song.header.video_path = canonicalize_path(&txt_song.header.video_path, base_path)?;
+        txt_song.header.cover_path = canonicalize_path(&txt_song.header.cover_path, base_path)?;
         txt_song.header.background_path =
-            canonicalize_path(txt_song.header.background_path, base_path)?;
+            canonicalize_path(&txt_song.header.background_path, base_path)?;
     }
 
     Ok(txt_song)
