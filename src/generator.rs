@@ -23,7 +23,7 @@ pub fn generate_song_txt(header: &Header, lines: &[Line]) -> Result<String> {
         Some(x) => x,
         None => bail!(ErrorKind::InvalidPathEncoding("MP3")),
     }; */
-    let mut song_txt_str = String::from(format!(
+    let mut song_txt_str = format!(
         "#TITLE:{}\n#ARTIST:{}\n#MP3:{}\n#BPM:{}\n",
         header.title, header.artist, mp3_str, header.bpm
     );
