@@ -95,6 +95,11 @@ pub fn parse_txt_song<P: AsRef<Path>>(path: P) -> Result<TXTSong> {
         // anymore
         //txt_song.header.audio_path =
         //    canonicalize_path(Some(txt_song.header.audio_path), base_path)?.unwrap();
+        if path_is_local(&txt_song.header.audio_path) {
+            let as_path = PathBuf::from(txt_song.header.audio_path);
+            txt_song.header.audio_path =
+                canonicalize_path(&Some(as_path), base_path)?.unwrap().display().to_string();
+        }
 
         // canonicalize other path
         txt_song.header.video_path = canonicalize_path(&txt_song.header.video_path, base_path)?;
@@ -104,4 +109,14 @@ pub fn parse_txt_song<P: AsRef<Path>>(path: P) -> Result<TXTSong> {
     }
 
     Ok(txt_song)
+}
+
+/// Returns whether the path references a local file.
+pub fn path_is_local(path: &str) -> bool {
+    // guess based on the occurence of a ://, but not a file://
+    if path.contains("://") && !path.contains("file://") {
+        false
+    } else {
+        true
+    }
 }
