@@ -18,11 +18,11 @@ pub struct Header {
     /// the gap between the start of the audio file and the first note in milliseconds
     pub gap: Option<f32>,
     /// the path to the cover file of the song
-    pub cover_path: Option<PathBuf>,
+    pub cover_path: Option<String>,
     /// the path to the background file of the song
-    pub background_path: Option<PathBuf>,
+    pub background_path: Option<String>,
     /// the path to the video file of the song
-    pub video_path: Option<PathBuf>,
+    pub video_path: Option<String>,
     /// the time offset of the video file to the audio file
     pub video_gap: Option<f32>,
     /// the genre of the song

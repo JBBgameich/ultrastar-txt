@@ -31,25 +31,13 @@ pub fn generate_song_txt(header: &Header, lines: &[Line]) -> Result<String> {
         song_txt_str.push_str(&format!("#GAP:{}\n", gap));
     }
     if let Some(cover_path) = header.cover_path.clone() {
-        let cover_str = match cover_path.to_str() {
-            Some(x) => x,
-            None => bail!(ErrorKind::InvalidPathEncoding("COVER")),
-        };
-        song_txt_str.push_str(&format!("#COVER:{}\n", cover_str));
+        song_txt_str.push_str(&format!("#COVER:{}\n", cover_path));
     }
     if let Some(background_path) = header.background_path.clone() {
-        let background_str = match background_path.to_str() {
-            Some(x) => x,
-            None => bail!(ErrorKind::InvalidPathEncoding("BACKGROUND")),
-        };
-        song_txt_str.push_str(&format!("#BACKGROUND:{}\n", background_str));
+        song_txt_str.push_str(&format!("#BACKGROUND:{}\n", background_path));
     }
     if let Some(video_path) = header.video_path.clone() {
-        let video_str = match video_path.to_str() {
-            Some(x) => x,
-            None => bail!(ErrorKind::InvalidPathEncoding("VIDEO")),
-        };
-        song_txt_str.push_str(&format!("#VIDEO:{}\n", video_str));
+        song_txt_str.push_str(&format!("#VIDEO:{}\n", video_path));
     }
     if let Some(videogap) = header.video_gap {
         song_txt_str.push_str(&format!("#VIDEOGAP:{}\n", videogap));

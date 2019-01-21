@@ -133,21 +133,21 @@ pub fn parse_txt_header_str(txt_str: &str) -> Result<Header> {
             }
             "COVER" => {
                 if opt_cover_path.is_none() {
-                    opt_cover_path = Some(PathBuf::from(value));
+                    opt_cover_path = Some(String::from(value));
                 } else {
                     bail!(ErrorKind::DuplicateHeader(line_count, "COVER"));
                 }
             }
             "BACKGROUND" => {
                 if opt_background_path.is_none() {
-                    opt_background_path = Some(PathBuf::from(value));
+                    opt_background_path = Some(String::from(value));
                 } else {
                     bail!(ErrorKind::DuplicateHeader(line_count, "BACKGROUND"));
                 }
             }
             "VIDEO" => {
                 if opt_video_path.is_none() {
-                    opt_video_path = Some(PathBuf::from(value));
+                    opt_video_path = Some(String::from(value));
                 } else {
                     bail!(ErrorKind::DuplicateHeader(line_count, "VIDEO"));
                 }

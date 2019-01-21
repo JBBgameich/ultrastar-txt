@@ -59,20 +59,35 @@ fn read_file_to_string<P: AsRef<Path>>(p: P) -> Result<String> {
     Ok(file_content)
 }
 
-fn canonicalize_path<P: AsRef<Path>, B: AsRef<Path>>(
-    path: &Option<P>,
-    base_path: B,
-) -> Result<Option<PathBuf>> {
-    Ok(if let Some(ref path) = path {
-        let mut tmp_path = PathBuf::from(base_path.as_ref());
-        tmp_path.push(path);
-        let result = tmp_path
-            .canonicalize()
-            .chain_err(|| ErrorKind::CanonicalizationError)?;
-        Some(result)
+fn canonicalize_path(path: String, base_path: impl AsRef<Path>) -> Result<String> {
+    fn perform_canonicalization<P: AsRef<Path>, B: AsRef<Path>>(
+        path: &Option<P>,
+        base_path: B,
+    ) -> Result<Option<PathBuf>> {
+
+        Ok(if let Some(ref path) = path {
+            let mut tmp_path = PathBuf::from(base_path.as_ref());
+            tmp_path.push(path);
+            let result = tmp_path
+                .canonicalize()
+                .chain_err(|| ErrorKind::CanonicalizationError)?;
+            Some(result)
+        } else {
+            None
+        })
+    }
+
+    if path_is_local(&path) && !path.starts_with("file:///") {
+        let path = if path.starts_with("file://") {
+            path.chars().skip("file://".len()).collect()
+        } else {
+            path.clone()
+        };
+        let path = PathBuf::from(path);
+        Ok(perform_canonicalization(&Some(path), base_path)?.unwrap().display().to_string())
     } else {
-        None
-    })
+        Ok(path)
+    }
 }
 
 /// Takes path to a song file and returns TXTSong struct with canonicalized paths
@@ -91,26 +106,17 @@ pub fn parse_txt_song<P: AsRef<Path>>(path: P) -> Result<TXTSong> {
 
     // canonicalize paths
     if let Some(base_path) = path.parent() {
-        // canonicalize audio path - TODO:assuming it is not needed, since we dont have path
-        // anymore
-        //txt_song.header.audio_path =
-        //    canonicalize_path(Some(txt_song.header.audio_path), base_path)?.unwrap();
-        if path_is_local(&txt_song.header.audio_path) && !txt_song.header.audio_path.starts_with("file:///") {
-            let path = if txt_song.header.audio_path.starts_with("file://") {
-                txt_song.header.audio_path.chars().skip("file://".len()).collect()
-            } else {
-                txt_song.header.audio_path.clone()
-            };
-            let as_path = PathBuf::from(path);
-            txt_song.header.audio_path =
-                canonicalize_path(&Some(as_path), base_path)?.unwrap().display().to_string();
-        }
+        txt_song.header.audio_path = canonicalize_path(txt_song.header.audio_path, base_path)?;
 
-        // canonicalize other path
-        txt_song.header.video_path = canonicalize_path(&txt_song.header.video_path, base_path)?;
-        txt_song.header.cover_path = canonicalize_path(&txt_song.header.cover_path, base_path)?;
-        txt_song.header.background_path =
-            canonicalize_path(&txt_song.header.background_path, base_path)?;
+        if let Some(video_path) = txt_song.header.video_path {
+            txt_song.header.video_path = Some(canonicalize_path(video_path, base_path)?);
+        }
+        if let Some(cover_path) = txt_song.header.cover_path {
+            txt_song.header.cover_path = Some(canonicalize_path(cover_path, base_path)?);
+        }
+        if let Some(background_path) = txt_song.header.background_path {
+            txt_song.header.background_path = Some(canonicalize_path(background_path, base_path)?);
+        }
     }
 
     Ok(txt_song)
