@@ -4,45 +4,51 @@ extern crate encoding;
 use crate::parser::{parse_txt_header_str, parse_txt_lines_str};
 use crate::structs::TXTSong;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, self};
 use std::path::{Path, PathBuf};
+use thiserror::Error;
 
-error_chain! {
-    errors {
-        #[doc="input output error while handling the file"]
-        IOError {
-            description("io error")
-        }
-        #[doc="error in encoding detection"]
-        EncodingDetectionError {
-            description("encoding detection error")
-        }
-        #[doc="error while decoding"]
-        DecodingError(msg: String) {
-            description("decoding error")
-            display("decoding error: {}", msg)
-        }
-        #[doc="error in path canonicalization"]
-        CanonicalizationError {
-            description("canonicalization error")
-        }
-        #[doc="error in parsing the song header"]
-        HeaderParsingError {
-            description("header parsing error")
-        }
-        #[doc="error in parsing the songs lines"]
-        LinesParsingError {
-            description("lines parsing error")
-        }
-    }
+/// Result produced by the loader
+pub type Result<T> = std::result::Result<T, Error>;
+
+/// Errors that can occur while loading a file
+#[derive(Error, Debug)]
+pub enum Error {
+    /// input output error while handling the file
+    #[error("io error")]
+    IOError(io::Error),
+
+    /// error in encoding detection
+    #[error("encoding detection error")]
+    EncodingDetectionError,
+
+    /// error while decoding
+    #[error("decoding error: {msg:?}")]
+    DecodingError {
+        /// message describing the decoding error
+        msg: String
+    },
+
+    /// error in path canonicalization
+    #[error("canonicalization error")]
+    CanonicalizationError(io::Error),
+
+    /// error in parsing the song header
+    #[error("header parsing error")]
+    HeaderParsingError(crate::parser::Error),
+
+    /// error in parsing the songs lines
+    #[error("lines parsing error")]
+    LinesParsingError(crate::parser::Error)
 }
+
 
 fn read_file_to_string<P: AsRef<Path>>(p: P) -> Result<String> {
     let p = p.as_ref();
-    let mut f = File::open(p).chain_err(|| ErrorKind::IOError)?;
+    let mut f = File::open(p).map_err(Error::IOError)?;
     let mut reader: Vec<u8> = Vec::new();
     f.read_to_end(&mut reader)
-        .chain_err(|| ErrorKind::IOError)?;
+        .map_err(Error::IOError)?;
 
     // detect encoding and decode to String
     let chardet_result = chardet::detect(&reader);
@@ -51,9 +57,11 @@ fn read_file_to_string<P: AsRef<Path>>(p: P) -> Result<String> {
     let file_content = match coder {
         Some(c) => match c.decode(&reader, encoding::DecoderTrap::Ignore) {
             Ok(x) => x,
-            Err(e) => bail!(ErrorKind::DecodingError(e.into_owned())),
+            Err(e) => {
+                return Err(Error::DecodingError { msg: e.into_owned() })
+            },
         },
-        None => bail!(ErrorKind::EncodingDetectionError),
+        None => return Err(Error::EncodingDetectionError),
     };
 
     Ok(file_content)
@@ -70,7 +78,7 @@ fn canonicalize_path(path: String, base_path: impl AsRef<Path>) -> Result<String
             tmp_path.push(path);
             let result = tmp_path
                 .canonicalize()
-                .chain_err(|| ErrorKind::CanonicalizationError)?;
+                .map_err(Error::CanonicalizationError)?;
             Some(result)
         } else {
             None
@@ -100,8 +108,8 @@ pub fn parse_txt_song<P: AsRef<Path>>(path: P) -> Result<TXTSong> {
     let txt = read_file_to_string(path)?;
 
     let mut txt_song = TXTSong {
-        header: parse_txt_header_str(txt.as_ref()).chain_err(|| ErrorKind::HeaderParsingError)?,
-        lines: parse_txt_lines_str(txt.as_ref()).chain_err(|| ErrorKind::LinesParsingError)?,
+        header: parse_txt_header_str(txt.as_ref()).map_err(Error::HeaderParsingError)?,
+        lines: parse_txt_lines_str(txt.as_ref()).map_err(Error::LinesParsingError)?,
     };
 
     // canonicalize paths

@@ -3,8 +3,6 @@
 #![deny(missing_docs)]
 
 #[macro_use]
-extern crate error_chain;
-#[macro_use]
 extern crate lazy_static;
 extern crate regex;
 

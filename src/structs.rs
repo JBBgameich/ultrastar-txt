@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
 
 /// Describes the Header of an Ultrastar Song
 #[derive(PartialEq, Clone, Debug)]

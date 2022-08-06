@@ -21,10 +21,10 @@ regex = "1"
 lazy_static = "1"
 chardet = {version = "0.2", optional = true}
 encoding = {version = "0.2", optional = true}
-error-chain = "0.12"
+thiserror = "1.0"
 
 [dev-dependencies]
-criterion = "0.2"
+criterion = "0.3"
 
 [[bench]]
 name = "generate_real_song"

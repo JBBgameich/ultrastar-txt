@@ -1,12 +1,17 @@
 use crate::structs::*;
+use thiserror::Error;
 
-error_chain! {
-    errors {
-        #[doc="the path encoding is invalid"]
-        InvalidPathEncoding(tag: &'static str) {
-            description("invalid path encoding")
-            display("invalid path encoding on tag: {}", tag)
-        }
+/// Result produced by the generator
+pub type Result<T> = std::result::Result<T, Error>;
+
+/// Errors that can occur while generating
+#[derive(Error, Debug)]
+pub enum Error {
+    /// the path encoding is invalid
+    #[error("invalid path encoding on tag: {tag:?}")]
+    InvalidPathEncoding {
+        /// tag on which the error occured
+        tag: &'static str
     }
 }
 
@@ -21,7 +26,7 @@ pub fn generate_song_txt(header: &Header, lines: &[Line]) -> Result<String> {
     let mp3_str = header.audio_path.clone();
     /*let mp3_str = match Some(header.audio_path) {
         Some(x) => x,
-        None => bail!(ErrorKind::InvalidPathEncoding("MP3")),
+        None => Err(Error::InvalidPathEncoding("MP3")),
     }; */
     let mut song_txt_str = format!(
         "#TITLE:{}\n#ARTIST:{}\n#MP3:{}\n#BPM:{}\n",
